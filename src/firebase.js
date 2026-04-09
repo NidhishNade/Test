@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { initializeFirestore } from "firebase/firestore";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { initializeFirestore, connectFirestoreEmulator } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCuMxSS3H91roHp5gvWoZW1dYxZ5KhXFeA",
@@ -19,5 +19,12 @@ export const auth = getAuth(app);
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
 });
+
+// Connect to Emulators in Development
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  console.info('🛠️ EVENTIFY: Development Mode Detected. Connecting to Local Emulators...');
+  connectFirestoreEmulator(db, 'localhost', 8080);
+  connectAuthEmulator(auth, "http://localhost:9099");
+}
 
 export default app;

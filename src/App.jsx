@@ -17,7 +17,11 @@ import {
   ArrowLeft,
   Github,
   X,
-  ChevronLeft
+  ChevronLeft,
+  Globe,
+  Wifi,
+  WifiOff,
+  ShieldAlert
 } from 'lucide-react';
 import { 
   onAuthStateChanged, 
@@ -383,6 +387,32 @@ const CreateEventStudio = ({ setView, handleCreate, formState, setFormState, isS
   );
 };
 
+// --- Connectivity Status Component ---
+
+const ConnectivityStatus = ({ isEmulator, isBlocked }) => (
+  <div className="fixed bottom-8 left-8 z-[100] animate-bounce-in">
+    <div className={`flex items-center gap-3 px-5 py-3 rounded-full shadow-2xl border backdrop-blur-md ${
+      isBlocked ? 'bg-m-red-5 border-m-red/20 text-m-red' : 
+      isEmulator ? 'bg-m-teal-5 border-m-teal/20 text-m-teal' :
+      'bg-green-50 border-green-200 text-green-600'
+    }`}>
+      {isBlocked ? <ShieldAlert size={18} /> : isEmulator ? <Wifi size={18} /> : <Globe size={18} />}
+      <div className="flex flex-col">
+        <span className="text-[10px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">Architecture Status</span>
+        <span className="text-xs font-black italic">
+          {isBlocked ? 'Cloud Blocked by AdBlocker' : isEmulator ? 'Connected to Local Emulator' : 'Connected to Cloud'}
+        </span>
+      </div>
+      {isBlocked && (
+        <div className="ml-2 w-2 h-2 rounded-full bg-m-red animate-pulse"></div>
+      )}
+      {isEmulator && (
+        <div className="ml-2 w-2 h-2 rounded-full bg-m-teal animate-pulse"></div>
+      )}
+    </div>
+  </div>
+);
+
 // --- Main App Component (Final Architectural Clean) ---
 
 function App() {
@@ -411,11 +441,24 @@ function App() {
     image: 'https://images.unsplash.com/photo-1540575861501-7c0b7b09d346?auto=format&fit=crop&w=800&q=80',
     category: 'Tech'
   });
+  
+  const [isEmulator, setIsEmulator] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
+      
+      // Detection Logic
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      setIsEmulator(isLocal);
+      
+      // Only check for cloud blocks if we are NOT in emulator mode
+      if (!isLocal) {
+        fetch('https://firestore.googleapis.com/google.firestore.v1.Firestore/Check', { mode: 'no-cors' })
+          .catch(() => setIsBlocked(true));
+      }
     });
     return unsubscribe;
   }, []);
@@ -597,6 +640,8 @@ function App() {
           </div>
         </div>
       </nav>
+
+      <ConnectivityStatus isEmulator={isEmulator} isBlocked={isBlocked} />
 
       <main className="min-h-[calc(100vh-80px)]">
         {user ? (
