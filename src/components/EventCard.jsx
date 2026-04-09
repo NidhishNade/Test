@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
 import { Clock, MapPin, Users, CheckCircle2 } from 'lucide-react';
+import avatar1 from '../assets/avatar_1.png';
+import avatar2 from '../assets/avatar_2.png';
+import avatar3 from '../assets/avatar_3.png';
+import avatar4 from '../assets/avatar_4.png';
+
+const AVATARS = [avatar1, avatar2, avatar3, avatar4];
 
 const CATEGORY_COLORS = {
   Music:      { bg: 'rgba(124,58,237,0.18)', color: '#7c3aed', border: 'rgba(124,58,237,0.3)', grad: 'linear-gradient(135deg,#4c1d95,#7c3aed)' },
@@ -16,19 +22,19 @@ const CATEGORY_EMOJIS = {
   Outdoors: '🏔️', Wellness: '🌸', Art: '🎨', Gaming: '🎮',
 };
 
-/* ── Initials avatar for the event creator ──────────── */
+/* ── Image avatar for the event creator ──────────── */
 function CreatorAvatar({ name, gradient }) {
-  const initials = name
-    ? name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
-    : '?';
+  const hash = name ? name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 0;
+  const avatarImage = AVATARS[hash % AVATARS.length];
+
   return (
     <div
       className="creator-avatar"
-      style={{ background: gradient }}
+      style={{ background: 'none' }}
       title={name ? `Created by ${name}` : 'Unknown creator'}
       aria-label={`Created by ${name || 'unknown'}`}
     >
-      {initials}
+      <img src={avatarImage} alt={name || 'Creator'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
     </div>
   );
 }

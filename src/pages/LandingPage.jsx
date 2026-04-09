@@ -2,12 +2,39 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Zap, ArrowRight, Search, MapPin,
   Music, Monitor, Coffee, Mountain, Flower2, Palette, Gamepad2,
-  ChevronRight, Star, Users,
+  ChevronRight, Star, Users, X
 } from 'lucide-react';
+
+import stepFindImg from '../assets/step_find.png';
+import stepMeetImg from '../assets/step_meet.png';
+import stepHostImg from '../assets/step_host.png';
+import badgeMusicImg from '../assets/badge_music.png';
+import badgeTechImg from '../assets/badge_tech.png';
+import badgeYogaImg from '../assets/badge_yoga.png';
+import avatar1 from '../assets/avatar_1.png';
+import avatar2 from '../assets/avatar_2.png';
+import avatar3 from '../assets/avatar_3.png';
+import avatar4 from '../assets/avatar_4.png';
+import imgCatMusic from '../assets/cat_music_1775776582134.png';
+import imgCatTech from '../assets/cat_technology_1775776595314.png';
+import imgCatSocial from '../assets/cat_social_1775776607879.png';
+import imgCatOutdoors from '../assets/cat_outdoors_1775776625053.png';
+import imgCatWellness from '../assets/cat_wellness_1775776639827.png';
+import imgCatArt from '../assets/cat_art_1775776662842.png';
 
 const CATEGORY_ICONS = {
   Music: Music, Technology: Monitor, Social: Coffee,
   Outdoors: Mountain, Wellness: Flower2, Art: Palette, Gaming: Gamepad2,
+};
+
+const CATEGORY_IMAGES = {
+  Music: imgCatMusic,
+  Technology: imgCatTech,
+  Social: imgCatSocial,
+  Outdoors: imgCatOutdoors,
+  Wellness: imgCatWellness,
+  Art: imgCatArt,
+  Gaming: null,
 };
 
 const CATEGORY_COLORS = {
@@ -21,15 +48,15 @@ const CATEGORY_COLORS = {
 };
 
 const HERO_BADGES = [
-  { emoji: '🎵', title: 'Jazz Night at Blue Note',  meta: 'Tonight · Soho',        color: '#1e1040', delay: '0ms' },
-  { emoji: '💻', title: 'React & Coffee Meetup',    meta: 'Tomorrow · Shoreditch', color: '#0a2035', delay: '150ms' },
-  { emoji: '🧘', title: 'Sunday Morning Yoga',      meta: 'Sun · Hyde Park',       color: '#0a2a1a', delay: '300ms' },
+  { img: badgeMusicImg, title: 'Jazz Night at Blue Note',  meta: 'Tonight · Soho',        color: '#1e1040', delay: '0ms' },
+  { img: badgeTechImg, title: 'React & Coffee Meetup',    meta: 'Tomorrow · Shoreditch', color: '#0a2035', delay: '150ms' },
+  { img: badgeYogaImg, title: 'Sunday Morning Yoga',      meta: 'Sun · Hyde Park',       color: '#0a2a1a', delay: '300ms' },
 ];
 
 const HOW_STEPS = [
-  { n: '01', title: 'Find your interest',  desc: 'Browse events across every category—music, tech, outdoors, and more.', icon: '🔍' },
-  { n: '02', title: 'Meet your people',    desc: 'RSVP and connect with others who share your passions in real life.',   icon: '🤝' },
-  { n: '03', title: 'Host your own',       desc: 'Launch an event with our studio tool in under two minutes.',           icon: '🚀' },
+  { n: '01', title: 'Find your interest',  desc: 'Browse events across every category—music, tech, outdoors, and more.', img: stepFindImg },
+  { n: '02', title: 'Meet your people',    desc: 'RSVP and connect with others who share your passions in real life.',   img: stepMeetImg },
+  { n: '03', title: 'Host your own',       desc: 'Launch an event with our studio tool in under two minutes.',           img: stepHostImg },
 ];
 
 /* ── Intersection Observer scroll-reveal hook ─────── */
@@ -65,7 +92,9 @@ function HowStepCard({ step, index }) {
         transition: `opacity 0.55s ease ${index * 120}ms, transform 0.55s ease ${index * 120}ms`,
       }}
     >
-      <div className="how-step-icon-wrap">{step.icon}</div>
+      <div className="how-step-icon-wrap">
+        <img src={step.img} alt={step.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+      </div>
       <div className="step-number">{step.n}</div>
       <h3 className="how-step-title">{step.title}</h3>
       <p className="how-step-desc">{step.desc}</p>
@@ -76,6 +105,8 @@ function HowStepCard({ step, index }) {
 export default function LandingPage({ setShowAuth, setIsLogin }) {
   const [searchQuery, setSearchQuery]   = useState('');
   const [locationQuery, setLocationQuery] = useState('');
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [activePreviewCategory, setActivePreviewCategory] = useState(null);
 
   return (
     <div className="animate-slide-up">
@@ -137,10 +168,11 @@ export default function LandingPage({ setShowAuth, setIsLogin }) {
                   <div
                     className="hero-badge"
                     key={b.title}
-                    style={{ animationDelay: b.delay }}
+                    style={{ animationDelay: b.delay, cursor: 'pointer' }}
+                    onClick={() => setSelectedEvent(b)}
                   >
                     <div className="hero-badge-icon" style={{ background: b.color }}>
-                      {b.emoji}
+                      <img src={b.img} alt="Badge" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </div>
                     <div className="hero-badge-text">
                       <p className="hero-badge-title">{b.title}</p>
@@ -218,7 +250,8 @@ export default function LandingPage({ setShowAuth, setIsLogin }) {
               return (
                 <button
                   key={cat}
-                  className="category-pill-rich"
+                  onClick={() => setActivePreviewCategory(activePreviewCategory === cat ? null : cat)}
+                  className={`category-pill-rich ${activePreviewCategory === cat ? 'active' : ''}`}
                   style={{
                     '--cat-bg':     theme.bg,
                     '--cat-color':  theme.color,
@@ -230,6 +263,48 @@ export default function LandingPage({ setShowAuth, setIsLogin }) {
                 </button>
               );
             })}
+          </div>
+
+          {/* Dynamic Category Preview Panel */}
+          <div className={`category-preview-panel ${activePreviewCategory ? 'open' : ''}`}>
+            {activePreviewCategory && CATEGORY_COLORS[activePreviewCategory] && (
+              <div 
+                className="category-preview-content"
+                style={{ 
+                  background: CATEGORY_COLORS[activePreviewCategory].bg,
+                  borderColor: CATEGORY_COLORS[activePreviewCategory].border 
+                }}
+              >
+                <div className="preview-info">
+                  <h3 style={{ color: CATEGORY_COLORS[activePreviewCategory].color, fontSize: '1.5rem', marginBottom: '8px' }}>
+                    {activePreviewCategory} Events
+                  </h3>
+                  <p style={{ color: 'var(--m-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>
+                    Discover live events, connect with enthusiasts, and be part of the community.
+                  </p>
+                  <button 
+                    className="btn-primary preview-cta"
+                    style={{
+                      background: CATEGORY_COLORS[activePreviewCategory].color,
+                      boxShadow: `0 4px 14px ${CATEGORY_COLORS[activePreviewCategory].border}`
+                    }}
+                    onClick={() => { setShowAuth(true); setIsLogin(false); }}
+                  >
+                    Explore {activePreviewCategory}
+                  </button>
+                </div>
+                <div className="preview-graphic">
+                  {(() => {
+                    const PreviewImg = CATEGORY_IMAGES[activePreviewCategory];
+                    if (PreviewImg) {
+                      return <img src={PreviewImg} alt={activePreviewCategory} style={{ width: '220px', height: '220px', objectFit: 'contain', filter: 'drop-shadow(0 15px 30px rgba(0,0,0,0.4))' }} />;
+                    }
+                    const PreviewIcon = CATEGORY_ICONS[activePreviewCategory];
+                    return <PreviewIcon size={80} style={{ color: CATEGORY_COLORS[activePreviewCategory].color, opacity: 0.15 }} />;
+                  })()}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -250,6 +325,41 @@ export default function LandingPage({ setShowAuth, setIsLogin }) {
         </div>
       </section>
 
+      {/* Event Quick-View Modal */}
+      {selectedEvent && (
+        <div className="event-preview-modal-overlay" onClick={() => setSelectedEvent(null)}>
+          <div className="event-preview-modal animate-slide-up" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setSelectedEvent(null)}>
+              <X size={20} />
+            </button>
+            <div className="modal-header-img" style={{ background: selectedEvent.color }}>
+              <img src={selectedEvent.img} alt={selectedEvent.title} />
+            </div>
+            <div className="modal-body">
+              <h2 style={{ fontSize: '1.5rem', marginBottom: '4px', color: 'white' }}>{selectedEvent.title}</h2>
+              <p className="modal-meta" style={{ color: 'var(--m-text-muted)', marginBottom: '24px' }}>{selectedEvent.meta}</p>
+              
+              <div className="modal-fake-details" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+                <div className="detail-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.9)' }}>
+                  <Users size={16} style={{ color: 'var(--m-teal)' }}/> <span>48 people attending</span>
+                </div>
+                <div className="detail-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.9)' }}>
+                  <Zap size={16} style={{ color: 'var(--m-red)' }}/> <span>Selling out fast</span>
+                </div>
+              </div>
+              
+              <button 
+                className="btn-primary modal-cta"
+                style={{ width: '100%', padding: '16px' }}
+                onClick={() => { setSelectedEvent(null); setShowAuth(true); setIsLogin(false); }}
+              >
+                Join free to RSVP
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── CTA ───────────────────────────────────────── */}
       <section className="section-cta">
         <div className="cta-card">
@@ -261,8 +371,10 @@ export default function LandingPage({ setShowAuth, setIsLogin }) {
             {/* Social proof */}
             <div className="cta-social-proof">
               <div className="cta-avatar-stack">
-                {['A','B','C','D'].map((l, i) => (
-                  <div key={l} className="cta-avatar" style={{ marginLeft: i > 0 ? '-10px' : 0 }}>{l}</div>
+                {[avatar1, avatar2, avatar3, avatar4].map((src, i) => (
+                  <div key={src} className="cta-avatar" style={{ marginLeft: i > 0 ? '-10px' : 0 }}>
+                    <img src={src} alt="Member" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
                 ))}
               </div>
               <span className="cta-social-text">Join 50,000+ members worldwide</span>

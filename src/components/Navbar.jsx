@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, LogOut, LogIn, Menu, X, LayoutDashboard, Home } from 'lucide-react';
+import avatarUser from '../assets/avatar_user.png';
 
 export default function Navbar({
   user, currentView,
@@ -104,7 +105,9 @@ export default function Navbar({
                 )}
 
                 <button className="navbar-user-chip" onClick={onNavigateDashboard}>
-                  <div className="navbar-avatar">{initial}</div>
+                  <div className="navbar-avatar" style={{ background: 'none' }}>
+                    <img src={avatarUser} alt="User Desktop Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
                   <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>
                     {displayName.split(' ')[0]}
                   </span>
@@ -157,7 +160,9 @@ export default function Navbar({
             <>
               {/* User row */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 0 12px' }}>
-                <div className="navbar-avatar" style={{ width: 44, height: 44, fontSize: '1.1rem' }}>{initial}</div>
+                <div className="navbar-avatar" style={{ width: 44, height: 44, background: 'none' }}>
+                  <img src={avatarUser} alt="User Mobile Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
                 <div>
                   <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Signed in as</p>
                   <p style={{ fontWeight: 700, fontSize: '0.95rem' }}>{displayName}</p>
