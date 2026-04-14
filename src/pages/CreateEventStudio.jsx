@@ -132,21 +132,42 @@ export default function CreateEventStudio({ setView, handleCreate, formState, se
               </div>
             </div>
 
-            {/* ── Max Attendees (optional) ──────── */}
-            <div>
-              <p className="studio-section-label" style={{ marginBottom: '0.5rem' }}>
-                Max Attendees <span style={{ fontWeight: 600, textTransform: 'none', opacity: 0.6 }}>(optional)</span>
-              </p>
-              <input
-                className="studio-input"
-                type="number"
-                min="2"
-                max="10000"
-                value={formState.maxAttendees || ''}
-                onChange={e => setFormState({ ...formState, maxAttendees: e.target.value })}
-                placeholder="Leave blank for unlimited"
-                aria-label="Maximum attendees"
-              />
+            {/* ── Max Attendees + Price ────────── */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+              <div>
+                <p className="studio-section-label" style={{ marginBottom: '0.5rem' }}>
+                  Max Attendees <span style={{ fontWeight: 600, textTransform: 'none', opacity: 0.6 }}>(optional)</span>
+                </p>
+                <input
+                  className="studio-input"
+                  type="number"
+                  min="2"
+                  max="10000"
+                  value={formState.maxAttendees || ''}
+                  onChange={e => setFormState({ ...formState, maxAttendees: e.target.value })}
+                  placeholder="Unlimited"
+                  aria-label="Maximum attendees"
+                />
+              </div>
+              <div>
+                <p className="studio-section-label" style={{ marginBottom: '0.5rem' }}>
+                  Ticket Price <span style={{ fontWeight: 600, textTransform: 'none', opacity: 0.6 }}>(USD $)</span>
+                </p>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>$</span>
+                  <input
+                    className="studio-input"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    style={{ paddingLeft: '2rem' }}
+                    value={formState.price || ''}
+                    onChange={e => setFormState({ ...formState, price: e.target.value })}
+                    placeholder="0.00 (Free)"
+                    aria-label="Event ticket price"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* ── Visual Theme ──────────────────── */}

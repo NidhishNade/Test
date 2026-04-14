@@ -10,6 +10,12 @@ const CATEGORY_EMOJIS = {
   Outdoors: '🏔️', Wellness: '🌸', Art: '🎨', Gaming: '🎮',
 };
 
+const TABS = [
+  { id: 'Upcoming',   label: 'Upcoming' },
+  { id: 'MyEvents',   label: 'My Events' },
+  { id: 'MyTickets',  label: 'My Tickets' }
+];
+
 const SORT_OPTIONS = [
   { value: 'newest',   label: 'Newest first' },
   { value: 'oldest',   label: 'Oldest first' },
@@ -51,7 +57,6 @@ function StatChip({ value, label }) {
 
 /* ── Tab indicator helper ────────────────────────────── */
 function TabBar({ active, onChange }) {
-  const tabs = ['Upcoming', 'My Events'];
   const underlineRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -67,13 +72,13 @@ function TabBar({ active, onChange }) {
 
   return (
     <div className="dashboard-tabs" ref={containerRef}>
-      {tabs.map(t => (
+      {TABS.map(t => (
         <button
-          key={t}
-          className={`dashboard-tab ${active === t ? 'active' : ''}`}
-          onClick={() => onChange(t)}
+          key={t.id}
+          className={`dashboard-tab ${active === t.id ? 'active' : ''}`}
+          onClick={() => onChange(t.id)}
         >
-          {t}
+          {t.label}
         </button>
       ))}
       <span className="tab-underline" ref={underlineRef} />
@@ -82,7 +87,7 @@ function TabBar({ active, onChange }) {
 }
 
 export default function Dashboard({
-  events, user, toggleRSVP, setView,
+  events, user, toggleRSVP, onBuy, onViewTicket, setView,
   searchTerm, setSearchTerm,
   activeCategory, setActiveCategory,
   eventsLoading = false,
@@ -97,28 +102,38 @@ export default function Dashboard({
     return 'Good evening';
   };
 
-  const myRsvpCount = events.filter(e => e.rsvps?.includes(user?.uid)).length;
+  const myRsvpCount = events.filter(e => e.rsvps?.includes(user?.id)).length;
 
   /* ── Handle tab switch ──────────────── */
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    if (tab === 'My Events') setActiveCategory('My Events');
-    else setActiveCategory('All');
+    setActiveCategory('All');
   };
 
   /* ── Filter + sort ──────────────────── */
   const filteredEvents = events.filter(event => {
+    const isPast = new Date(event.date) < new Date();
+    const isGoing = user && event.rsvps?.includes(user.id);
+    const isCreatedByMe = user && event.creator_id === user.id;
+    const isPaid = (event.price || 0) > 0;
+
+    // 1. Tab-level filtering
+    if (activeTab === 'Upcoming' && isPast) return false;
+    if (activeTab === 'MyEvents' && !isCreatedByMe) return false;
+    if (activeTab === 'MyTickets' && (!isGoing || !isPaid || isPast)) return false;
+
+    // 2. Search filtering
     const matchesSearch =
       !searchTerm ||
       event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      activeCategory === 'All' || activeCategory === 'My Events'
-        ? true
-        : event.category === activeCategory;
-    const matchesMyEvents =
-      activeTab === 'My Events' ? event.creatorId === user?.uid : true;
-    return matchesSearch && matchesCategory && matchesMyEvents;
+    if (!matchesSearch) return false;
+
+    // 3. Category filtering
+    const matchesCategory = activeCategory === 'All' || event.category === activeCategory;
+    if (!matchesCategory) return false;
+
+    return true;
   }).sort((a, b) => {
     if (sortBy === 'newest')  return new Date(b.date) - new Date(a.date);
     if (sortBy === 'oldest')  return new Date(a.date) - new Date(b.date);
@@ -257,6 +272,8 @@ export default function Dashboard({
                   event={event}
                   user={user}
                   toggleRSVP={toggleRSVP}
+                  onBuy={onBuy}
+                  onViewTicket={onViewTicket}
                 />
               </div>
             ))}

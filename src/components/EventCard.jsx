@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, MapPin, Users, CheckCircle2 } from 'lucide-react';
+import { Clock, MapPin, Users, CheckCircle2, Pencil, Ticket } from 'lucide-react';
 import avatar1 from '../assets/avatar_1.png';
 import avatar2 from '../assets/avatar_2.png';
 import avatar3 from '../assets/avatar_3.png';
@@ -62,8 +62,10 @@ function RSVPCount({ count }) {
   );
 }
 
-export default function EventCard({ event, user, toggleRSVP, isPreview = false }) {
-  const isGoing = event.rsvps?.includes(user?.uid);
+export default function EventCard({ event, user, toggleRSVP, onBuy, onViewTicket, isPreview = false }) {
+  const isGoing = event.rsvps?.includes(user?.id);
+  const isPaid  = (event.price || 0) > 0;
+  const isCreator = user?.id === event.creator_id;
   const theme   = CATEGORY_COLORS[event.category] || {
     bg: 'rgba(230,57,70,0.18)', color: '#f87171',
     border: 'rgba(230,57,70,0.3)', grad: 'linear-gradient(135deg,#7f1d1d,var(--m-red))',
@@ -108,6 +110,11 @@ export default function EventCard({ event, user, toggleRSVP, isPreview = false }
             {event.category}
           </div>
         )}
+        {(isPaid || event.price > 0) && (
+          <div className="event-price-badge">
+            ${event.price}
+          </div>
+        )}
       </div>
 
       {/* ── Body ─────────────────────── */}
@@ -133,21 +140,45 @@ export default function EventCard({ event, user, toggleRSVP, isPreview = false }
 
         {/* ── RSVP footer ──────────────── */}
         {!isPreview && (
-          <div className="event-card-footer">
-            {/* Creator avatar */}
-            <CreatorAvatar
-              name={event.creatorName || event.creatorEmail?.split('@')[0]}
-              gradient={theme.grad}
-            />
+          <div className="event-card-footer" style={{ position: 'relative', zIndex: 5, pointerEvents: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+              {/* Creator avatar */}
+              <CreatorAvatar
+                name={event.creatorName || event.creator_email?.split('@')[0]}
+                gradient={theme.grad}
+              />
+              
+              {isCreator && (
+                <button
+                  onClick={() => onBuy(event, true)} // Reusing onBuy with a flag for edit
+                  className="edit-mini-btn"
+                  title="Edit Event"
+                >
+                  <Pencil size={14} />
+                </button>
+              )}
+            </div>
 
             {/* RSVP button */}
             {isGoing ? (
               <button
-                onClick={() => toggleRSVP(event.id, event.rsvps)}
+                onClick={() => isPaid ? onViewTicket(event) : toggleRSVP(event.id, event.rsvps)}
                 className="rsvp-btn rsvp-btn-active"
-                aria-label="Cancel RSVP"
+                aria-label={isPaid ? "View your ticket" : "Cancel RSVP"}
               >
-                <CheckCircle2 size={16} /> You're going ✓
+                {isPaid ? (
+                   <><Ticket size={18} /> View Ticket 🎟️</>
+                ) : (
+                   <><CheckCircle2 size={18} /> You're going</>
+                )}
+              </button>
+            ) : isPaid ? (
+              <button
+                onClick={() => onBuy(event)}
+                className="rsvp-btn rsvp-btn-paid"
+                aria-label={`Buy ticket for ${event.title}`}
+              >
+                Get Ticket — ${event.price}
               </button>
             ) : (
               <button
@@ -155,7 +186,7 @@ export default function EventCard({ event, user, toggleRSVP, isPreview = false }
                 className="rsvp-btn rsvp-btn-default"
                 aria-label={`Attend ${event.title}`}
               >
-                RSVP — Join event
+                RSVP — Join FREE
               </button>
             )}
           </div>
